@@ -1,12 +1,16 @@
 pub mod sudoku {
     use bit_vec::BitVec;
-    use std::fmt::{Display, Formatter};
+    use rand::prelude::*;
+    use std::{
+        fmt::{Display, Formatter},
+        mem, ptr,
+    };
 
     const BOARD_SIZE: usize = 9;
 
     #[derive(Debug, Clone)]
     pub struct Board {
-        grid: [[Option<i8>; BOARD_SIZE]; BOARD_SIZE],
+        pub(crate) grid: [[Option<i8>; BOARD_SIZE]; BOARD_SIZE],
     }
 
     impl Board {
@@ -168,12 +172,90 @@ pub mod sudoku {
 
     #[derive(Debug, Clone)]
     pub struct Solution {
-        grid: [[Option<i8>; BOARD_SIZE]; BOARD_SIZE],
+        pub(crate) grid: [[Option<i8>; BOARD_SIZE]; BOARD_SIZE],
     }
 
     impl Solution {
         pub fn from_board(board: Board) -> Self {
             Self { grid: board.grid }
+        }
+
+        pub fn new_from_board(board: &Board) -> Result<Self, Box<dyn std::error::Error>> {
+            let mut solution = Solution::default();
+
+            for block_i in 0..3 {
+                for block_j in 0..3 {
+                    // for each block, find the unused numbers ...
+                    let mut taken = [false; 9];
+                    for i in 0..3 {
+                        for j in 0..3 {
+                            let tile = board.grid[block_i * 3 + i][block_j * 3 + j];
+                            if let Some(num) = tile {
+                                if taken[(num - 1) as usize] {
+                                    return Err(Box::from(format!(
+                                        "{} is used twice in same original board block ({},{})",
+                                        num,
+                                        block_i * 3 + i,
+                                        block_j * 3 + j
+                                    )));
+                                }
+                                taken[(num - 1) as usize] = true;
+                            }
+                        }
+                    }
+                    // ... and add them in order to the unfilled spots
+                    for i in 0..3 {
+                        for j in 0..3 {
+                            let tile = board.grid[block_i * 3 + i][block_j * 3 + j];
+                            if let Some(_) = tile {
+                            } else {
+                                solution.grid[block_i * 3 + i][block_j * 3 + j] =
+                                    Some(find_next_empty_num(&mut taken));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return Ok(solution);
+        }
+
+        pub(crate) fn flip_spaces(&mut self, x1: usize, y1: usize, x2: usize, y2: usize) {
+            unsafe {
+                let pa: *mut Option<i8> = &mut self.grid[x1][y1];
+                let pb: *mut Option<i8> = &mut self.grid[x2][y2];
+                ptr::swap(pa, pb);
+            }
+        }
+
+        //todo: maybe use faster random algorithm
+        pub fn flip_random_spaces_in_block(&mut self, block_x: usize, block_y: usize) {
+            let mut rng = rand::rng();
+            let x1 = rng.random_range(0..3);
+            let y1 = rng.random_range(0..3);
+            let x2 = rng.random_range(0..3);
+            let y2 = rng.random_range(0..3);
+            self.flip_spaces(
+                block_x * 3 + x1,
+                block_y * 3 + y1,
+                block_x * 3 + x2,
+                block_y * 3 + y2,
+            );
+        }
+
+        pub fn flip_random_spaces(&mut self) {
+            let mut rng = rand::rng();
+            let block_x = rng.random_range(0..3);
+            let block_y = rng.random_range(0..3);
+            self.flip_random_spaces_in_block(block_x, block_y);
+        }
+    }
+
+    impl Default for Solution {
+        fn default() -> Self {
+            Self {
+                grid: [[None; BOARD_SIZE]; BOARD_SIZE],
+            }
         }
     }
 
@@ -183,6 +265,16 @@ pub mod sudoku {
             return board.fmt(f);
         }
     }
+
+    fn find_next_empty_num(taken: &mut [bool; 9]) -> i8 {
+        for i in 0..9 {
+            if !taken[i] {
+                taken[i] = true;
+                return (i + 1) as i8;
+            }
+        }
+        unreachable!();
+    }
 }
 
 #[cfg(test)]
@@ -190,7 +282,7 @@ mod tests {
     use crate::Board;
     use crate::Solution;
     #[test]
-    fn correct_board() {
+    fn correct_solution() {
         let board = Board::from_string(
             "278000401609100050005006900430809000706003000091000800000020173860001004107934685",
         );
@@ -204,7 +296,7 @@ mod tests {
     }
 
     #[test]
-    fn incorrect_board() {
+    fn incorrect_solution() {
         let board = Board::from_string(
             "278000401609100050005006900430809000706003000091000800000020173860001004107934685",
         );
@@ -218,7 +310,7 @@ mod tests {
     }
 
     #[test]
-    fn errored_board() {
+    fn errored_solution() {
         let board = Board::from_string(
             "278000401609100050005006900430809000706003000091000800000020173860001004107934685",
         );
@@ -229,5 +321,16 @@ mod tests {
         let score = board.score_solution(&solution);
 
         assert!(score.is_err());
+    }
+
+    #[test]
+    fn test_flip() {
+        let mut solution = Solution::from_board(Board::from_string(
+            "123456789123456789123456789123456789123456789123456789123456789123456789123456789",
+        ));
+
+        solution.flip_spaces(0, 0, 0, 1);
+        assert_eq!(solution.grid[0][0], Some(2));
+        assert_eq!(solution.grid[0][1], Some(1));
     }
 }
