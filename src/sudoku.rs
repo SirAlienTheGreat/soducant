@@ -3,7 +3,7 @@ pub mod sudoku {
     use rand::prelude::*;
     use std::{
         fmt::{Display, Formatter},
-        mem, ptr,
+        ptr,
     };
 
     const BOARD_SIZE: usize = 9;
@@ -229,25 +229,56 @@ pub mod sudoku {
         }
 
         //todo: maybe use faster random algorithm
-        pub fn flip_random_spaces_in_block(&mut self, block_x: usize, block_y: usize) {
+        pub fn flip_random_spaces_in_block(
+            &mut self,
+            block_x: usize,
+            block_y: usize,
+        ) -> Result<(), Box<dyn std::error::Error>> {
             let mut rng = rand::rng();
-            let x1 = rng.random_range(0..3);
-            let y1 = rng.random_range(0..3);
-            let x2 = rng.random_range(0..3);
-            let y2 = rng.random_range(0..3);
-            self.flip_spaces(
-                block_x * 3 + x1,
-                block_y * 3 + y1,
-                block_x * 3 + x2,
-                block_y * 3 + y2,
-            );
+
+            let mut available_spaces = [(99, 99); 9];
+            let mut num_spaces = 0;
+
+            for i in 0..3 {
+                for j in 0..3 {
+                    if self.grid[block_x * 3 + i][block_y * 3 + j].is_some() {
+                        available_spaces[num_spaces] = (block_x * 3 + i, block_y * 3 + j);
+                        num_spaces += 1;
+                    }
+                }
+            }
+
+            if num_spaces == 0 {
+                return Err(Box::from("No spaces in selected block"));
+            }
+
+            let space_1_i = rng.random_range(0..num_spaces);
+            let space_1 = available_spaces[space_1_i].clone();
+
+            if space_1_i != num_spaces {
+                available_spaces.swap(num_spaces - 1, space_1_i);
+                num_spaces -= 1;
+            }
+
+            let space_2_i = rng.random_range(0..num_spaces);
+            let space_2 = available_spaces[space_2_i].clone();
+
+            //dbg!(space_1, space_2);
+
+            debug_assert_ne!(space_1, space_2);
+            debug_assert!(self.grid[space_1.0][space_1.1].is_some());
+            debug_assert!(self.grid[space_2.0][space_2.1].is_some());
+
+            self.flip_spaces(space_1.0, space_1.1, space_2.0, space_2.1);
+
+            return Ok(());
         }
 
         pub fn flip_random_spaces(&mut self) {
             let mut rng = rand::rng();
             let block_x = rng.random_range(0..3);
             let block_y = rng.random_range(0..3);
-            self.flip_random_spaces_in_block(block_x, block_y);
+            self.flip_random_spaces_in_block(block_x, block_y).unwrap();
         }
     }
 
