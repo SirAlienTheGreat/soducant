@@ -30,24 +30,38 @@ pub mod sudoku {
             return Self { grid };
         }
 
-        pub fn from_string(str: &str) -> Self {
-            assert!(
-                str.len() == BOARD_SIZE * BOARD_SIZE,
-                "Board construction from string requires properly sized board"
-            );
+        pub fn to_clean_string(&self) -> String {
+            let mut out = "".to_string();
+            for i in 0..9 {
+                for j in 0..9 {
+                    out += &self.grid[i][j].unwrap_or(0).to_string();
+                }
+            }
+            return out;
+        }
+
+        pub fn from_string(str: &str) -> Result<Self, Box<dyn std::error::Error>> {
+            if str.len() != BOARD_SIZE * BOARD_SIZE {
+                return Err(Box::from(
+                    "Board construction from string requires properly sized board",
+                ));
+            }
 
             let mut arr: [[i8; BOARD_SIZE]; BOARD_SIZE] = [[0; BOARD_SIZE]; BOARD_SIZE];
 
             for (i, c) in str.chars().enumerate() {
-                assert!(
+                /*assert!(
                     c.is_ascii_digit(),
                     "String entry contains a non-number {}",
                     c
-                );
-                arr[i / BOARD_SIZE][i % BOARD_SIZE] = c.to_digit(10).unwrap() as i8;
+                );*/
+                arr[i / BOARD_SIZE][i % BOARD_SIZE] = c
+                    .to_digit(10)
+                    .ok_or("Board construction from string requires only numbers in string")?
+                    as i8;
             }
 
-            return Self::from_arr_with_zeros(arr);
+            return Ok(Self::from_arr_with_zeros(arr));
         }
 
         pub fn from_solution(board: Solution) -> Self {
@@ -326,10 +340,12 @@ mod tests {
     fn correct_solution() {
         let board = Board::from_string(
             "278000401609100050005006900430809000706003000091000800000020173860001004107934685",
-        );
+        )
+        .unwrap();
         let solution = Solution::from_board(Board::from_string(
             "000395060040082307310740028002050716080210549500467032954608000003570290020000000",
-        ));
+        ))
+        .unwrap();
 
         let score = board.score_solution(&solution).unwrap();
 
@@ -340,10 +356,12 @@ mod tests {
     fn incorrect_solution() {
         let board = Board::from_string(
             "278000401609100050005006900430809000706003000091000800000020173860001004107934685",
-        );
+        )
+        .unwrap();
         let solution = Solution::from_board(Board::from_string(
             "000495060040082307310740028002050716080210549500467032954608000003570290020000000",
-        ));
+        ))
+        .unwrap();
 
         let score = board.score_solution(&solution).unwrap();
 
@@ -354,10 +372,12 @@ mod tests {
     fn errored_solution() {
         let board = Board::from_string(
             "278000401609100050005006900430809000706003000091000800000020173860001004107934685",
-        );
+        )
+        .unwrap();
         let solution = Solution::from_board(Board::from_string(
             "000395060040082307310740028002050716080210549500467032954608000003570290020000003",
-        ));
+        ))
+        .unwrap();
 
         let score = board.score_solution(&solution);
 

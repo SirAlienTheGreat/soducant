@@ -18,7 +18,8 @@ pub mod solver {
         fn default() -> Self {
             let b = Board::from_string(
                 "000057001751094000204000073400610009500920810900408365020709100108040030600000207",
-            );
+            )
+            .unwrap();
             let s = Solution::new_from_board(&b).unwrap();
             Solver {
                 temperature: 9.0,
@@ -36,7 +37,7 @@ pub mod solver {
             let mut solver = Self::default();
             solver.temperature = temperature;
             solver.decay = decay;
-            solver.board = Board::from_string(board);
+            solver.board = Board::from_string(board).unwrap();
             solver.solution = Solution::new_from_board(&solver.board).unwrap();
             solver.current_score = solver.board.score_solution(&solver.solution).unwrap();
             return solver;
@@ -44,7 +45,7 @@ pub mod solver {
 
         pub fn new_with_board(board: &str) -> Self {
             let mut solver = Self::default();
-            solver.board = Board::from_string(board);
+            solver.board = Board::from_string(board).unwrap();
             solver.solution = Solution::new_from_board(&solver.board).unwrap();
             solver.current_score = solver.board.score_solution(&solver.solution).unwrap();
             return solver;

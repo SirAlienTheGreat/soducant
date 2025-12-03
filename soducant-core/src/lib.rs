@@ -1,11 +1,11 @@
-mod sudoku;
-use crate::solver::solver::Solver;
-use crate::solver::solver::benchmark;
-use crate::sudoku::sudoku::Board;
+pub mod sudoku;
+// use crate::solver::solver::benchmark;
+// use crate::solver::solver::Solver;
+// use crate::sudoku::sudoku::Board;
 
-mod solver;
+pub mod solver;
 
-fn main() {
+/*fn main() {
     let board = Board::from_string(
         "278000401609100050005006900430809000706003000091000800000020173860001004107934685",
     );
@@ -54,4 +54,4 @@ fn main() {
     //let score = board.score_solution(&solution).unwrap();
 
     //println!("{}", score);
-}
+}*/

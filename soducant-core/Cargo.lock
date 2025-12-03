@@ -95,14 +95,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "soducant-cli"
-version = "0.1.0"
-dependencies = [
- "soducant-core",
-]
-
-[[package]]
-name = "soducant-core"
+name = "soducant"
 version = "0.1.0"
 dependencies = [
  "bit-vec",
