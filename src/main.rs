@@ -1,7 +1,7 @@
 mod sudoku;
 use crate::solver::solver::Solver;
+use crate::solver::solver::benchmark;
 use crate::sudoku::sudoku::Board;
-use crate::sudoku::sudoku::Solution;
 
 mod solver;
 
@@ -29,12 +29,14 @@ fn main() {
         )
     }
 
-    let mut passes = 0;
+    benchmark();
+
+    /*let mut passes = 0;
     let attempts = 500;
 
     for _ in 0..attempts {
         let mut solver = Solver::default();
-        let solution = solver.solve(10000);
+        let solution = solver.solve(20000);
         if solution.is_some() {
             passes += 1;
         }
@@ -45,7 +47,7 @@ fn main() {
         passes,
         attempts,
         100.0 * passes as f32 / attempts as f32
-    );
+    );*/
 
     // 278000401609100050005006900430809000706003000091000800000020173860001004107934685
 
