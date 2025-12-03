@@ -220,6 +220,16 @@ pub mod sudoku {
             return Ok(solution);
         }
 
+        pub fn to_clean_string(&self) -> String {
+            let mut out = "".to_string();
+            for i in 0..9 {
+                for j in 0..9 {
+                    out += &self.grid[i][j].unwrap_or(0).to_string();
+                }
+            }
+            return out;
+        }
+
         pub(crate) fn flip_spaces(&mut self, x1: usize, y1: usize, x2: usize, y2: usize) {
             unsafe {
                 let pa: *mut Option<i8> = &mut self.grid[x1][y1];

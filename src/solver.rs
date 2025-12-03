@@ -144,4 +144,24 @@ pub mod solver {
         );
         println!("Time taken: {:?}", duration); // Prints in a readable format
     }
+
+    pub fn solve(board: &str) -> Result<String, Box<dyn std::error::Error>> {
+        let mut solver = Solver::new_with_board(board);
+        let solution = solver.solve(100000);
+        if let Some(answer) = solution {
+            return Ok(answer.to_clean_string());
+        }
+
+        let mut solver = Solver::new_with_params(board, 10.0, 0.99);
+        let solution = solver.solve(50000);
+        if let Some(answer) = solution {
+            return Ok(answer.to_clean_string());
+        }
+
+        return Err(Box::from("Couldn't find a solution"));
+    }
+
+    pub fn solve_or_unwrap(board: &str) -> String {
+        return solve(board).unwrap();
+    }
 }
