@@ -14,6 +14,8 @@ pub mod solver {
         time_since_last_improvement: u32,
     }
 
+    static PUZZLE_CACHE: &str = include_str!("test_sudokus.txt");
+
     impl Default for Solver {
         fn default() -> Self {
             let b = Board::from_string(
@@ -63,10 +65,6 @@ pub mod solver {
 
             // if new is better than old, accept it
             if new_score < self.current_score {
-                /*println!(
-                    "accepting new move: (Current: {}, new: {})",
-                    self.current_score, new_score
-                );*/
                 self.solution = new_solution;
                 self.current_score = new_score;
                 self.time_since_last_improvement = 0;
@@ -82,17 +80,11 @@ pub mod solver {
                 - ((new_score as i32 - self.current_score as i32) as f64 / self.temperature))
                 .exp();
             self.cool();
-            //println!("P(accept)={}", p_accept);
 
             let mut rng = rand::rng();
             if rng.random_bool(p_accept) {
-                /*println!(
-                    "New solution randomly selected: (Current: {}, new: {})",
-                    self.current_score, new_score
-                );*/
                 self.solution = new_solution;
                 self.current_score = new_score;
-                //return Some(self.solution.clone());
             }
             return None;
         }
@@ -100,12 +92,7 @@ pub mod solver {
         pub fn solve(&mut self, max_iter: i32) -> Option<Solution> {
             for _ in 0..max_iter {
                 let step = self.solve_one_step();
-                /*println!(
-                    "Solution after {} steps (score {}):\n{}",
-                    i, self.current_score, self.board
-                );*/
                 if let Some(solution) = step {
-                    //println!("Solved after {} iterations", i);
                     return Some(solution);
                 }
                 if self.time_since_last_improvement >= 750 {
@@ -119,18 +106,26 @@ pub mod solver {
         }
     }
 
-    pub fn benchmark() {
+    pub fn benchmark(print_solutions: bool) {
         let mut passes = 0;
         let mut attempts = 0;
 
         let start = Instant::now();
 
-        for line in include_str!("test_sudokus.txt").lines() {
+        for line in PUZZLE_CACHE.lines() {
+            if print_solutions {
+                let board = Board::from_string(line).unwrap();
+                println!("Now solving:\n{}", board);
+            }
             let mut solver = Solver::new_with_board(line);
             let solution = solver.solve(20000);
             if solution.is_some() {
                 passes += 1;
-                //println!("solution is: \n{}", solution.unwrap());
+                if print_solutions {
+                    println!("Solution found: \n{}", solution.unwrap());
+                }
+            } else if print_solutions {
+                println!("Couldn't find solution - miss");
             }
             attempts += 1;
         }
@@ -164,5 +159,12 @@ pub mod solver {
 
     pub fn solve_or_unwrap(board: &str) -> String {
         return solve(board).unwrap();
+    }
+
+    pub fn get_random_sudoku() -> String {
+        let mut rng = rand::rng();
+        let choice = rng.random_range(0..500);
+
+        return PUZZLE_CACHE.lines().nth(choice).unwrap().to_string();
     }
 }

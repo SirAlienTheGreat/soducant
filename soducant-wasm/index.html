@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-US">
+    <head>
+        <meta charset="utf-8" />
+        <title>hello-wasm example</title>
+        <style>
+            html {
+                background: black;
+            }
+            .sudokuEntry {
+                width: 10px;
+            }
+            .spacer {
+                height: 10px;
+                width: 4px;
+                display: block;
+            }
+
+            /* Chrome, Safari, Edge, Opera */
+            input::-webkit-outer-spin-button,
+            input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            /* Firefox */
+            input[type="number"] {
+                -moz-appearance: textfield;
+            }
+        </style>
+    </head>
+    <body>
+        <script type="module" src="./sudoku-web.js"></script>
+
+        <table id="sudokuBoard"></table>
+
+        <button onclick="showAlert()">Show Alert</button>
+        <button onclick="generateNewBoard()">Generate new board</button>
+        <button onclick="solveSudoku()">Solve Sudoku</button>
+        <button onclick="run_web_benchmark()">Run benchmark</button>
+        <p id="output" style="color: green"></p>
+    </body>
+</html>

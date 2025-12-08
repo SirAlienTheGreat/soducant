@@ -12,7 +12,7 @@ fn main() {
             || cmd.to_lowercase() == "-benchmark"
         {
             println!("Running benchmark");
-            solver::solver::benchmark();
+            solver::solver::benchmark(env::args().nth(2).is_some());
         } else {
             if let Ok(board) = sudoku::sudoku::Board::from_string(&cmd) {
                 println!("Solving the following sudoku:\n{}", board);
