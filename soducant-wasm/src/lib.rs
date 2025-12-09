@@ -10,3 +10,14 @@ pub fn solve(puzzle: &str) -> String {
 pub fn get_random_puzzle() -> String {
     return soducant_core::solver::solver::get_random_sudoku();
 }
+
+#[wasm_bindgen]
+pub fn benchmark_intern() {
+    for _ in 0..1000 {
+        soducant_core::solver::solver::solve(&soducant_core::solver::solver::get_random_sudoku())
+            .unwrap_or_else(|_| {
+                println!("Couldn't solve sudoku");
+                "Error".to_string()
+            });
+    }
+}

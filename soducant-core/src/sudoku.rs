@@ -302,7 +302,10 @@ pub mod sudoku {
             let mut rng = rand::rng();
             let block_x = rng.random_range(0..3);
             let block_y = rng.random_range(0..3);
-            self.flip_random_spaces_in_block(block_x, block_y).unwrap();
+            self.flip_random_spaces_in_block(block_x, block_y)
+                .unwrap_or_else(|_| {
+                    println!("Couldn't flip spaces in full block!");
+                });
         }
     }
 

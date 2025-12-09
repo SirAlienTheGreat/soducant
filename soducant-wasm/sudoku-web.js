@@ -1,4 +1,8 @@
-import init, { solve, get_random_puzzle } from "./pkg/soducant_wasm.js";
+import init, {
+  solve,
+  get_random_puzzle,
+  benchmark_intern,
+} from "./pkg/soducant_wasm.js";
 
 var solutionVisible = false;
 var allEntries = [];
@@ -22,14 +26,61 @@ function generateSudokuBoard() {
       const input = document.createElement("input");
       input.type = "number";
       input.classList.add("sudokuEntry");
+      input.min = 1;
+      input.max = 9;
 
       // Give each cell a unique ID like s1, s2, ..., s81
-      const cellId = "s" + ((row - 1) * 9 + col);
+      const cellNum = (row - 1) * 9 + col;
+      const cellId = "s" + cellNum;
       input.id = cellId;
 
       // Handle clearing inputs on entry
       input.addEventListener("input", clearPlaceholders);
       allEntries.push(input);
+
+      // Handle moving to new boxes on input
+      input.addEventListener("keydown", function (e) {
+        var nextInputId = 0;
+        switch (e.key) {
+          case "ArrowUp":
+            nextInputId = (cellNum + 72) % 81;
+            if (nextInputId == 0) {
+              nextInputId = 81;
+            }
+            break;
+          case "ArrowDown":
+            nextInputId = (cellNum + 9) % 81;
+            if (nextInputId == 0) {
+              nextInputId = 81;
+            }
+            break;
+          case "ArrowRight":
+            nextInputId = cellNum + 1;
+            if (nextInputId == 82) {
+              nextInputId = 1;
+            }
+            break;
+          case "ArrowLeft":
+            nextInputId = cellNum - 1;
+            if (nextInputId == 0) {
+              nextInputId = 81;
+            }
+            break;
+          default:
+            return;
+        }
+        const nextInput = document.getElementById("s" + nextInputId);
+        if (nextInput) {
+          e.preventDefault();
+          nextInput.focus();
+        } else {
+          console.log(nextInputId);
+        }
+      });
+
+      /*input.addEventListener("onkeypress", function (e) {
+        return false;
+        });*/
 
       th.appendChild(input);
       tr.appendChild(th);
@@ -81,6 +132,7 @@ function writeSudoku(puzzle) {
     }
     document.getElementById("s" + i).value = puzzle[i - 1];
   }
+  clearPlaceholders();
 }
 
 function writeSudokuSolution(puzzle) {
@@ -116,14 +168,6 @@ function generateNewBoard() {
   writeSudoku(get_random_puzzle());
 }
 
-function showAlert() {
-  writeSudoku(
-    "040100050107003960520008000000000017000906800803050620090060543600080700250097100",
-  );
-  solveSudoku();
-  //alert(solve(text));
-}
-
 async function run_web_benchmark() {
   const tries = 1000;
 
@@ -143,13 +187,27 @@ async function run_web_benchmark() {
     "ms";
 }
 
+function run_internal_benchmark() {
+  const start = performance.now();
+  benchmark_intern();
+  benchmark_intern();
+  const end = performance.now();
+
+  document.getElementById("output").innerHTML =
+    "Benchmark (internal edition, no writing to page) solved " +
+    1000 +
+    " sudokus in " +
+    (end - start) +
+    "ms";
+}
+
 generateSudokuBoard();
 
-window.showAlert = showAlert;
 window.readSudoku = readSudoku;
 window.writeSudoku = writeSudoku;
 window.writeSudokuSolution = writeSudokuSolution;
 window.solveSudoku = solveSudoku;
 window.generateNewBoard = generateNewBoard;
 window.run_web_benchmark = run_web_benchmark;
+window.run_internal_benchmark = run_internal_benchmark;
 window.solve = solve;

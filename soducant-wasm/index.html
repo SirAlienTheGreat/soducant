@@ -2,7 +2,7 @@
 <html lang="en-US">
     <head>
         <meta charset="utf-8" />
-        <title>hello-wasm example</title>
+        <title>Sudoku solver</title>
         <style>
             html {
                 background: black;
@@ -34,10 +34,21 @@
 
         <table id="sudokuBoard"></table>
 
-        <button onclick="showAlert()">Show Alert</button>
+        <button
+            onclick="
+                writeSudoku(
+                    '000000000000000000000000000000000000000000000000000000000000000000000000000000000',
+                )
+            "
+        >
+            Clear board
+        </button>
         <button onclick="generateNewBoard()">Generate new board</button>
         <button onclick="solveSudoku()">Solve Sudoku</button>
         <button onclick="run_web_benchmark()">Run benchmark</button>
+        <button onclick="run_internal_benchmark()">
+            Run internal benchmark
+        </button>
         <p id="output" style="color: green"></p>
     </body>
 </html>
